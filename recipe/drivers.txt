@@ -1,0 +1,138 @@
+// W.D.D's MAME build: which MAME driver source files go in.
+//
+// This is a MAME "driver filter" file (make SOURCEFILTER=…): one source file per line, relative to
+// MAME's src/mame/, with every system that file defines (the parent games and their clones). C++
+// comments are allowed. A line "+name" adds a single system, "-name" leaves one out.
+// Each file pulls in the CPUs, sound chips and cartridge/slot devices it needs, so a line can add
+// a lot: the build's manifest.json lists every system that ended up in it.
+// After changing this file, run tools/mame/build.sh again (and bump RECIPE there).
+
+// ── Arcade: late 70s / early 80s ────────────────────────────────────────────
+midw8080/mw8080bw.cpp       // Space Invaders, Gun Fight, Sea Wolf
+pacman/pacman.cpp           // Pac-Man / Puck Man, Ms. Pac-Man and their many clones
+pacman/pengo.cpp            // Pengo
+namco/galaga.cpp            // Galaga, Dig Dug, Xevious, Bosconian
+namco/mappy.cpp             // Mappy, Dig Dug II, Super Pac-Man
+namco/rallyx.cpp            // Rally-X, New Rally-X
+namco/pacland.cpp           // Pac-Land
+namco/skykid.cpp            // Sky Kid
+galaxian/galaxian.cpp       // Galaxian, Frogger, Scramble, Moon Cresta
+nintendo/dkong.cpp          // Donkey Kong, Donkey Kong Jr., Donkey Kong 3
+nintendo/mario.cpp          // Mario Bros.
+nintendo/popeye.cpp         // Popeye
+nintendo/punchout.cpp       // Punch-Out!!, Super Punch-Out!!
+atari/asteroid.cpp          // Asteroids, Asteroids Deluxe, Lunar Lander
+atari/centiped.cpp          // Centipede, Millipede
+atari/missile.cpp           // Missile Command
+atari/tempest.cpp           // Tempest
+atari/bzone.cpp             // Battlezone, Red Baron
+williams/williams.cpp       // Defender, Robotron: 2084, Joust, Stargate
+gottlieb/gottlieb.cpp       // Q*bert
+bally/mcr.cpp               // Tapper, Tron, Satan's Hollow
+bally/mcr3.cpp              // Spy Hunter, Rampage
+irem/m52.cpp                // Moon Patrol
+irem/m62.cpp                // Kung-Fu Master
+dataeast/btime.cpp          // BurgerTime
+universal/mrdo.cpp          // Mr. Do!
+universal/ladybug.cpp       // Lady Bug
+universal/docastle.cpp      // Mr. Do's Castle, Do! Run Run
+phoenix/phoenix.cpp         // Phoenix, Pleiads
+sega/zaxxon.cpp             // Zaxxon
+sega/system1.cpp            // Wonder Boy, Wonder Boy in Monster Land, Choplifter
+tecmo/bombjack.cpp          // Bomb Jack
+taito/qix.cpp               // Qix
+taito/taitosj.cpp           // Elevator Action, Jungle King
+capcom/1942.cpp             // 1942
+konami/pooyan.cpp           // Pooyan
+konami/timeplt.cpp          // Time Pilot
+konami/gyruss.cpp           // Gyruss
+konami/tutankhm.cpp         // Tutankham
+konami/junofrst.cpp         // Juno First
+konami/trackfld.cpp         // Track & Field
+konami/hyperspt.cpp         // Hyper Sports, Road Fighter
+konami/yiear.cpp            // Yie Ar Kung-Fu
+konami/circusc.cpp          // Circus Charlie
+konami/gberet.cpp           // Green Beret / Rush'n Attack
+konami/sbasketb.cpp         // Super Basketball
+
+// ── Arcade: mid/late 80s ────────────────────────────────────────────────────
+capcom/1943.cpp             // 1943
+capcom/commando.cpp         // Commando
+capcom/gng.cpp              // Ghosts'n Goblins
+capcom/gunsmoke.cpp         // Gun.Smoke
+capcom/lwings.cpp           // Legendary Wings, Section Z
+namco/namcos1.cpp           // Pac-Mania, Galaga '88, Splatterhouse, Dragon Spirit
+namco/namcos86.cpp          // Rolling Thunder
+konami/nemesis.cpp          // Gradius / Nemesis, Salamander, TwinBee
+konami/contra.cpp           // Contra
+konami/ironhors.cpp         // Iron Horse
+konami/tmnt.cpp             // Teenage Mutant Ninja Turtles, Punk Shot
+konami/aliens.cpp           // Aliens
+konami/parodius.cpp         // Parodius DA!
+konami/chqflag.cpp          // Chequered Flag
+taito/arkanoid.cpp          // Arkanoid
+taito/bublbobl.cpp          // Bubble Bobble
+taito/rastan.cpp            // Rastan
+taito/tnzs.cpp              // The NewZealand Story
+taito/lkage.cpp             // The Legend of Kage
+taito/darius.cpp            // Darius
+technos/ddragon.cpp         // Double Dragon, Double Dragon II
+tecmo/tecmo.cpp             // Rygar, Silkworm
+irem/m72.cpp                // R-Type, Dragon Breed, Image Fight
+sega/segahang.cpp           // Hang-On, Space Harrier
+sega/segaorun.cpp           // Out Run
+sega/segas16a.cpp           // Shinobi, Tetris, Alex Kidd
+sega/segas16b.cpp           // Altered Beast, Golden Axe, Aurail
+atari/atarisy1.cpp          // Marble Madness, Indiana Jones, Road Runner
+atari/atarisy2.cpp          // Paperboy, 720°, Gauntlet II... (System 2)
+atari/gauntlet.cpp          // Gauntlet
+toaplan/twincobr.cpp        // Twin Cobra / Kyukyoku Tiger
+toaplan/toaplan1.cpp        // Truxton / Tatsujin, Hellfire, Zero Wing
+toaplan/slapfght.cpp        // Slap Fight, Tiger-Heli
+
+// ── Arcade: 90s ─────────────────────────────────────────────────────────────
+capcom/cps1.cpp             // CPS-1: Street Fighter II, Final Fight, Strider, Ghouls'n Ghosts, 1941, Willow, Punisher
+capcom/cps2.cpp             // CPS-2: Super SF II, Alpha series, Darkstalkers, X-Men COTA, Marvel vs. Capcom, D&D
+snk/neogeo.cpp              // Neo Geo MVS/AES: Metal Slug, KOF, Samurai Shodown, Fatal Fury...
+konami/tmnt2.cpp            // TMNT: Turtles in Time, Sunset Riders
+konami/simpsons.cpp         // The Simpsons
+konami/xmen.cpp             // X-Men
+konami/vendetta.cpp         // Vendetta / Crime Fighters 2
+taito/ninjaw.cpp            // The Ninja Warriors
+taito/taito_b.cpp           // Puzzle Bobble, Rastan Saga II, Crime City
+taito/taito_f3.cpp          // Puzzle Bobble 2, Elevator Action Returns, Darius Gaiden, Bubble Symphony
+seibu/raiden.cpp            // Raiden
+williams/midyunit.cpp       // Midway Y-unit: NARC, Smash TV, Total Carnage, Terminator 2, Strike Force
+williams/midtunit.cpp       // Midway T-unit: Mortal Kombat, Mortal Kombat II, NBA Jam, Judge Dredd
+williams/midwunit.cpp       // Midway Wolf-unit: Mortal Kombat 3, Ultimate MK3, NBA Hangtime, Open Ice
+rare/kinst.cpp              // Killer Instinct, Killer Instinct 2
+promat/1945kiii.cpp         // 1945k III
+
+// ── Consoles ────────────────────────────────────────────────────────────────
+nintendo/nes.cpp            // NES / Famicom
+nintendo/snes.cpp           // SNES / Super Famicom
+nintendo/gb.cpp             // Game Boy, Game Boy Pocket, Game Boy Color
+nintendo/gba.cpp            // Game Boy Advance
+sega/mdconsole.cpp          // Mega Drive / Genesis, Sega CD / Mega-CD, 32X
+sega/sms.cpp                // Master System, Game Gear
+sega/sg1000.cpp             // SG-1000, SC-3000
+nec/pce.cpp                 // PC Engine / TurboGrafx-16 (with CD-ROM²)
+atari/a2600.cpp             // Atari 2600 (VCS)
+atari/a7800.cpp             // Atari 7800
+atari/lynx.cpp              // Atari Lynx
+coleco/coleco.cpp           // ColecoVision
+mattel/intv.cpp             // Intellivision
+miltonbradley/vectrex.cpp   // Vectrex
+snk/ngp.cpp                 // Neo Geo Pocket / Pocket Color
+bandai/wswan.cpp            // WonderSwan / WonderSwan Color
+
+// ── Home computers ──────────────────────────────────────────────────────────
+commodore/c64.cpp           // Commodore 64
+commodore/vic20.cpp         // VIC-20
+sinclair/spectrum.cpp       // ZX Spectrum 48K and clones
+sinclair/spec128.cpp        // ZX Spectrum 128, +2
+amstrad/amstrad.cpp         // Amstrad CPC 464/664/6128, GX4000
+atari/atari400.cpp          // Atari 400/800/XL/XE, 5200
+msx/msx1.cpp                // MSX1 machines (Sony HB-75P, National CF-2700, ...)
+msx/msx2.cpp                // MSX2 machines (Philips NMS 8250, Sony HB-F700P, Panasonic FS-A1, ...)
+amiga/amiga.cpp             // Amiga 500/500+/600/1200, CDTV, CD32

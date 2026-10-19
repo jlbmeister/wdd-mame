@@ -1,0 +1,153 @@
+diff --git a/scripts/genie.lua b/scripts/genie.lua
+index fa4a5bb6..5f999f8a 100644
+--- a/scripts/genie.lua
++++ b/scripts/genie.lua
+@@ -1111,7 +1111,7 @@ configuration { "asmjs" }
+ 		"-s USE_SDL_TTF=3",
+ 		"-s DEFAULT_LIBRARY_FUNCS_TO_INCLUDE=\"['\\$$ERRNO_CODES']\"",
+ 		"-s EXPORTED_FUNCTIONS=\"['_main', '_malloc', '__ZN15running_machine30emscripten_get_running_machineEv', '__ZN15running_machine17emscripten_get_uiEv', '__ZN15running_machine20emscripten_get_soundEv', '__ZN15mame_ui_manager12set_show_fpsEb', '__ZNK15mame_ui_manager8show_fpsEv', '__ZN13sound_manager4muteEbh', '__ZN15running_machine15emscripten_saveEPKc', '__ZN15running_machine15emscripten_loadEPKc', '__ZN15running_machine21emscripten_hard_resetEv', '__ZN15running_machine21emscripten_soft_resetEv', '__ZN15running_machine15emscripten_exitEv']\"",
+-		"-s EXPORTED_RUNTIME_METHODS=\"['cwrap']\"",
++		"-s EXPORTED_RUNTIME_METHODS=\"['cwrap','FS','callMain']\"",
+ 		"-s ERROR_ON_UNDEFINED_SYMBOLS=0",
+ 		"-s STACK_SIZE=5MB",
+ 		"-s MAX_WEBGL_VERSION=2",
+diff --git a/scripts/resources/emscripten/emscripten_post.js b/scripts/resources/emscripten/emscripten_post.js
+index b23f1820..58bc1ebd 100644
+--- a/scripts/resources/emscripten/emscripten_post.js
++++ b/scripts/resources/emscripten/emscripten_post.js
+@@ -1,18 +1,24 @@
+ // MAME-JavaScript function mappings
+ var JSMAME = JSMAME || {};
+-JSMAME.get_machine = Module.cwrap('_ZN15running_machine30emscripten_get_running_machineEv', 'number');
+-JSMAME.get_ui = Module.cwrap('_ZN15running_machine17emscripten_get_uiEv', 'number');
+-JSMAME.get_sound = Module.cwrap('_ZN15running_machine20emscripten_get_soundEv', 'number');
+-JSMAME.ui_set_show_fps = Module.cwrap('_ZN15mame_ui_manager12set_show_fpsEb', '', ['number', 'number']);
+-JSMAME.ui_get_show_fps = Module.cwrap('_ZNK15mame_ui_manager8show_fpsEv', 'number', ['number']);
+-JSMAME.sound_manager_mute = Module.cwrap('_ZN13sound_manager4muteEbh', '', ['number', 'number', 'number']);
+-JSMAME.sdl_pauseaudio = Module.cwrap('SDL_PauseAudio', '', ['number']);
+-JSMAME.sdl_sendkeyboardkey = Module.cwrap('SDL_SendKeyboardKey', '', ['number', 'number']);
++// W.D.D: bind on first call. cwrap of a numbers-only function returns the wasm export itself,
++// which doesn't exist yet when this runs (before instantiation), leaving undefined.
++var JSMAME_cwrap = function (name, ret, args) {
++	var f = null;
++	return function () { f = f || Module.cwrap(name, ret, args); return f.apply(null, arguments); };
++};
++JSMAME.get_machine = JSMAME_cwrap('_ZN15running_machine30emscripten_get_running_machineEv', 'number');
++JSMAME.get_ui = JSMAME_cwrap('_ZN15running_machine17emscripten_get_uiEv', 'number');
++JSMAME.get_sound = JSMAME_cwrap('_ZN15running_machine20emscripten_get_soundEv', 'number');
++JSMAME.ui_set_show_fps = JSMAME_cwrap('_ZN15mame_ui_manager12set_show_fpsEb', '', ['number', 'number']);
++JSMAME.ui_get_show_fps = JSMAME_cwrap('_ZNK15mame_ui_manager8show_fpsEv', 'number', ['number']);
++JSMAME.sound_manager_mute = JSMAME_cwrap('_ZN13sound_manager4muteEbh', '', ['number', 'number', 'number']);
++JSMAME.sdl_pauseaudio = JSMAME_cwrap('SDL_PauseAudio', '', ['number']);
++JSMAME.sdl_sendkeyboardkey = JSMAME_cwrap('SDL_SendKeyboardKey', '', ['number', 'number']);
+ 
+-JSMAME.soft_reset = Module.cwrap('_ZN15running_machine21emscripten_soft_resetEv', null);
+-JSMAME.hard_reset = Module.cwrap('_ZN15running_machine21emscripten_hard_resetEv', null);
+-JSMAME.exit = Module.cwrap('_ZN15running_machine15emscripten_exitEv', null, []);
+-JSMAME.save = Module.cwrap('_ZN15running_machine15emscripten_saveEPKc', null, ['string']);
+-JSMAME.load = Module.cwrap('_ZN15running_machine15emscripten_loadEPKc', null, ['string']);
++JSMAME.soft_reset = JSMAME_cwrap('_ZN15running_machine21emscripten_soft_resetEv', null);
++JSMAME.hard_reset = JSMAME_cwrap('_ZN15running_machine21emscripten_hard_resetEv', null);
++JSMAME.exit = JSMAME_cwrap('_ZN15running_machine15emscripten_exitEv', null, []);
++JSMAME.save = JSMAME_cwrap('_ZN15running_machine15emscripten_saveEPKc', null, ['string']);
++JSMAME.load = JSMAME_cwrap('_ZN15running_machine15emscripten_loadEPKc', null, ['string']);
+ 
+ var JSMESS = JSMAME;
+diff --git a/src/devices/bus/msx/cart/msxdos2.cpp b/src/devices/bus/msx/cart/msxdos2.cpp
+index 2dc969fe..de6693f6 100644
+--- a/src/devices/bus/msx/cart/msxdos2.cpp
++++ b/src/devices/bus/msx/cart/msxdos2.cpp
+@@ -39,7 +39,7 @@ protected:
+ 
+ 	void bank_w(u8 data);
+ 
+-	static inline constexpr unsigned PAGE_SIZE = 0x4000;
++	static inline constexpr unsigned BANK_PAGE_SIZE = 0x4000;
+ 
+ 	memory_bank_creator m_rombank;
+ 	u16 m_bank_address;
+@@ -77,7 +77,7 @@ std::error_condition msx_cart_msxdos2_base_device::initialize_cartridge(std::str
+ 		return image_error::BADSOFTWARE;
+ 	}
+ 
+-	m_rombank->configure_entries(0, 4, cart_rom_region()->base(), PAGE_SIZE);
++	m_rombank->configure_entries(0, 4, cart_rom_region()->base(), BANK_PAGE_SIZE);
+ 
+ 	return std::error_condition();
+ }
+@@ -130,7 +130,7 @@ std::error_condition msx_cart_msxdos2j_device::initialize_cartridge(std::string
+ 		return result;
+ 
+ 	u32 ram_size = cart_ram_region() ? cart_ram_region()->bytes() : 0;
+-	if (ram_size > 256 * PAGE_SIZE || (ram_size & (PAGE_SIZE - 1)) != 0)
++	if (ram_size > 256 * BANK_PAGE_SIZE || (ram_size & (BANK_PAGE_SIZE - 1)) != 0)
+ 	{
+ 		message = "msx_cart_msxdos2: Region 'ram' size must be a multiple of 0x4000 and at most 0x400000.";
+ 		return image_error::BADSOFTWARE;
+@@ -158,11 +158,11 @@ std::error_condition msx_cart_msxdos2j_device::initialize_cartridge(std::string
+ 	if (ram_size)
+ 	{
+ 		m_bank_mask = device_generic_cart_interface::map_non_power_of_two(
+-			unsigned(ram_size / PAGE_SIZE),
++			unsigned(ram_size / BANK_PAGE_SIZE),
+ 			[this] (unsigned entry, unsigned page)
+ 			{
+ 				for (int i = 0; i < 4; i++)
+-					m_rambank[i]->configure_entry(entry, cart_ram_region()->base() + PAGE_SIZE * page);
++					m_rambank[i]->configure_entry(entry, cart_ram_region()->base() + BANK_PAGE_SIZE * page);
+ 			}
+ 		);
+ 
+diff --git a/src/frontend/mame/ui/systemlist.cpp b/src/frontend/mame/ui/systemlist.cpp
+index d7450aac..9d5546ab 100644
+--- a/src/frontend/mame/ui/systemlist.cpp
++++ b/src/frontend/mame/ui/systemlist.cpp
+@@ -34,7 +34,7 @@ void system_list::cache_data(ui_options const &options)
+ 	if (!m_started)
+ 	{
+ 		m_started = true;
+-#if defined(__EMSCRIPTEN__)
++#if defined(__EMSCRIPTEN__) && !defined(__EMSCRIPTEN_PTHREADS__)
+ 		std::invoke(
+ #else
+ 		m_thread = std::make_unique<std::thread>(
+diff --git a/src/osd/modules/sound/js_sound.js b/src/osd/modules/sound/js_sound.js
+index 7f00d703..b5b56403 100644
+--- a/src/osd/modules/sound/js_sound.js
++++ b/src/osd/modules/sound/js_sound.js
+@@ -192,5 +192,5 @@ return {
+ 
+ })();
+ 
+-window.jsmame_stream_sink_update = jsmame_web_audio.stream_sink_update;
+-window.jsmame_sample_count = jsmame_web_audio.sample_count;
++globalThis.jsmame_stream_sink_update = jsmame_web_audio.stream_sink_update;
++globalThis.jsmame_sample_count = jsmame_web_audio.sample_count;
+diff --git a/src/osd/osdsync.cpp b/src/osd/osdsync.cpp
+index b227c072..c6e166e3 100644
+--- a/src/osd/osdsync.cpp
++++ b/src/osd/osdsync.cpp
+@@ -87,9 +87,13 @@ static void spin_while_not(const volatile AtomType *atom, MainType val, osd_tick
+ 
+ int osd_get_num_processors(bool heavy_mt)
+ {
+-#if defined(SDLMAME_EMSCRIPTEN)
++#if defined(SDLMAME_EMSCRIPTEN) && !defined(__EMSCRIPTEN_PTHREADS__)
+ 	// multithreading is not supported at this time
+ 	return 1;
++#elif defined(SDLMAME_EMSCRIPTEN)
++	// W.D.D build: pthreads (Web Workers), at most 4 like elsewhere; the page must be cross-origin isolated
++	unsigned int threads = std::max(std::thread::hardware_concurrency(), 1U);
++	return std::min(threads, 4U);
+ #else
+ 	unsigned int threads = std::thread::hardware_concurrency();
+ 	// max out at 4 for now since scaling above that seems to do poorly
+@@ -275,7 +279,7 @@ osd_work_queue *osd_work_queue_alloc(int flags)
+ 	if (osdworkqueuemaxthreads != nullptr && sscanf(osdworkqueuemaxthreads, "%d", &osdthreadnum) == 1 && threadnum > osdthreadnum)
+ 		threadnum = osdthreadnum;
+ 
+-#if defined(SDLMAME_EMSCRIPTEN)
++#if defined(SDLMAME_EMSCRIPTEN) && !defined(__EMSCRIPTEN_PTHREADS__)
+ 	// threads are not supported at all
+ 	threadnum = 0;
+ #endif
